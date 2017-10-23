@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1,
+            minimum-scale=1, width=device-width, height=device-height" />
+        <title>Scandit Barcode Scanner</title>
+    </head>
+    <body style='background:black'>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript">
+            function newTrackedCodes(matrixScanSession) {
+                matrixScanSession.newlyTrackedCodes.forEach(function(element) {
+                    if (element.symbology == Scandit.Barcode.Symbology.EAN8) {
+                        matrixScanSession.rejectTrackedCode(element)
+                    }
+                }, this);
+            }
+            function scan() {
+                Scandit.License.setAppKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --");
+
+                // The scanning behavior of the barcode picker is configured through scan
+                // settings. We start with empty scan settings and enable a generous set
+                // of 1D symbologies. Matrix scan is currently only supported for 1D
+                // symbologies, enabling 2D symbologies will result in unexpected results.
+                // In your own apps, only enable the symbologies you actually need.
+                var settings = new Scandit.ScanSettings();
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.EAN13, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.EAN8, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.UPCA, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.UPCE, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.CODE39, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.CODE128, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.ITF, true);
+
+                // Enable matrix scan and set the max number of barcodes that can be recognized per frame
+                // to some reasonable number for your use case. The max number of codes per frame does not
+                // limit the number of codes that can be tracked at the same time, it only limits the
+                // number of codes that can be newly recognized per frame.
+                settings.matrixScanEnabled = true;
+                settings.maxNumberOfCodesPerFrame = 10;
+
+                var picker = new Scandit.BarcodePicker(settings);
+
+                // Set continuous mode to not return after the first scan.
+                picker.continuousMode = true;
+
+                // Set the GUI style to MATRIXSCAN in order to use the default code visualization.
+                picker.getOverlayView().setGuiStyle(Scandit.ScanOverlay.GuiStyle.MATRIXSCAN);
+
+                // When matrix scan is enabled beeping/vibrating is often not wanted.
+                picker.getOverlayView().setBeepEnabled(false);
+                picker.getOverlayView().setVibrateEnabled(false);
+
+                picker.show(null, null, null, null, newTrackedCodes);
+                picker.startScanning();
+            }
+        </script>
+        <div align="center" valign="center">
+            <input type="button" value="scan" onclick="scan()" style="margin-top: 230px;
+                    width: 100px; height: 30px; font-size: 1em"/>
+        </div>
+    </body>
+</html>
